@@ -1,9 +1,6 @@
 package fr.lernejo.fileinjector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.AmqpException;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,12 +22,9 @@ public class Launcher {
                 RabbitTemplate rabbitTemplate = springContext.getBean(RabbitTemplate.class);
                 for (GameInfo gameInfo : gameInfos) {
                     rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
-                    rabbitTemplate.convertAndSend("", "game_info", gameInfo, new MessagePostProcessor() {
-                                @Override
-                                public Message postProcessMessage(Message message) throws AmqpException {
-                                    message.getMessageProperties().getHeaders().put("game_id", gameInfo.id());
-                                    return message;
-                                }});
+                    rabbitTemplate.convertAndSend("", "game_info", gameInfo, message -> {message.getMessageProperties().getHeaders().put("game_id", gameInfo.id());
+                        return message;
+                    });
                 }
             }
         }
